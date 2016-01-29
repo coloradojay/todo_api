@@ -1,7 +1,14 @@
 var bcrypt = require('bcrypt'),
     _ = require('underscore'),
     jwt = require('jsonwebtoken'),
-    cryptjs = require('crypto-js');
+    cryptjs = require('crypto-js'),
+    env;
+try {
+    env = require('../config/env.local');
+}
+catch (error) {
+    env = require('../config/env');
+}
 
 // Sequelize import function
 module.exports = function (sequelize, DataTypes) {
@@ -75,25 +82,25 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 },
                 findByToken: function (token) {
-                    return new Promise(function(resolve, reject){
+                    return new Promise(function (resolve, reject) {
                         try {
                             // Use jwt.verify to decode the token with the secret we used to encode the token
-                            var decodedJWT = jwt.verify(token, 'qwerty098');
+                            var decodedJWT = jwt.verify(token, env.tokenDataSecret);
                             // Use cryptojs decrypt on the decodedtoken with token and use the secret key from below
-                            var bytes = cryptjs.AES.decrypt(decodedJWT.token, 'abc123@#$');
+                            var bytes = cryptjs.AES.decrypt(decodedJWT.token, env.encryptDataSecret);
                             // Parse the bytes variable, format to a string and encode using UTF8
                             var tokenData = JSON.parse(bytes.toString(cryptjs.enc.Utf8));
                             // id and type are returned, use them to find the user by ID
                             user.findById(tokenData.id)
-                                .then(function(user){
-                                    if(user){
-                                       resolve(user);
+                                .then(function (user) {
+                                    if (user) {
+                                        resolve(user);
                                     }
                                     else {
                                         reject();
                                     }
-                                }, function(e){
-                                   reject();
+                                }, function (e) {
+                                    reject();
                                 });
                         }
                         catch (e) {
@@ -119,10 +126,10 @@ module.exports = function (sequelize, DataTypes) {
                             type: type
                         });
                         // encrypted secret abc123@#$
-                        var encryptedData = cryptjs.AES.encrypt(stringData, 'abc123@#$').toString();
+                        var encryptedData = cryptjs.AES.encrypt(stringData, env.encryptDataSecret).toString();
                         var token = jwt.sign({
                             token: encryptedData
-                        }, 'qwerty098');
+                        }, env.tokenDataSecret);
                         return token;
                     }
                     catch (e) {
