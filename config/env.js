@@ -1,4 +1,4 @@
 module.exports = {
-    encryptDataSecret: 'abc123@#$',
-    tokenDataSecret: 'qwerty098'
+    encryptDataSecret: process.env.encryptDataSecret,
+    tokenDataSecret: process.env.tokenDataSecret
 };
