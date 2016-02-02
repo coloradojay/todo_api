@@ -187,7 +187,7 @@ app.post('/users/login', function (req, res) {
         });
 });
 
-db.sequelize.sync().then(function () {
+db.sequelize.sync({force: true}).then(function () {
     // Start the server
     app.listen(PORT, function () {
         console.log('The party is happening at port', PORT);
