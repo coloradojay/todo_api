@@ -181,9 +181,9 @@ app.post('/users/login', function (req, res) {
                 // If the user credentials are incorrect, throw a 401 unauthorized code
                 res.status(401).send();
             }
-        }, function(){
+        }, function(e){
             // If there is an error, send 400 bad request
-            res.status(400).send();
+            res.status(400).send(e);
         });
 });
 

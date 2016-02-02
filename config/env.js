@@ -1,4 +1,4 @@
 module.exports = {
-    encryptDataSecret: '',
-    tokenDataSecret: ''
+    encryptDataSecret: 'abc123@#$',
+    tokenDataSecret: 'qwerty098'
 };
