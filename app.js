@@ -80,13 +80,13 @@ app.post('/todos/', middleware.requireAuthentication, function (req, res) {
             // We have access to the user object via the requireAuthentication custom middleware
             // Call addTodo and pass in the todo
             req.user.addTodo(todo)
-                .then(function(){
+                .then(function () {
                     // Then we want to reload the db so that we get an updated info from the db
                     return todo.reload();
-                }).then(function(todo){
-                    // Then we want to respond with the todo in JSON for the user who the todo belongs to
-                    res.json(todo.toJSON());
-                });
+                }).then(function (todo) {
+                // Then we want to respond with the todo in JSON for the user who the todo belongs to
+                res.json(todo.toJSON());
+            });
         }, function (error) {
             res.status(400).json(error);
         });
@@ -168,22 +168,34 @@ app.post('/users/', function (req, res) {
 // POST /users/login
 app.post('/users/login', function (req, res) {
     var body = _.pick(req.body, 'email', 'password');
+    var userInstance;
 
     // custom class method
     db.user.authenticate(body)
-        .then(function(user){
-            var token  = user.generateToken('authentication');
-            if(token){
-                // If there is a token, respond with the toPublicJSON instance method
-                res.header('Auth', token).json(user.toPublicJSON());
-            }
-            else {
-                // If the user credentials are incorrect, throw a 401 unauthorized code
-                res.status(401).send();
-            }
-        }, function(e){
+        .then(function (user) {
+            var token = user.generateToken('authentication');
+
+            userInstance = user;
+
+            return db.token.create({
+                token: token
+            });
+
+        }).then(function (tokenInstance) {
+            res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+        }).catch(function () {
             // If there is an error, send 400 bad request
-            res.status(400).send(e);
+            res.status(400).send();
+        });
+});
+
+// DELETE
+app.delete('/users/logout', middleware.requireAuthentication, function(req, res){
+    req.token.destroy()
+        .then(function(){
+            res.status(204).send();
+        }).catch(function(){
+            res.status(500).send();
         });
 });
 
